@@ -81,6 +81,7 @@ if __name__ == '__main__':
         text_file.write(ssssss)
         text_file.write('\n')
     #保存数据到文本文件
+    
     #模拟数据堆栈，保存上级文本信息
     texts = [[]]
     def save_to_text(contents,text_file):
