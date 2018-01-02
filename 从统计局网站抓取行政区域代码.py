@@ -1,5 +1,6 @@
 ﻿#!phthon3
 """从国家统计局网站抓取统计行政区域代码信息"""
+# to do:建立调试信息系统
 
 from selenium import webdriver
 import threading
