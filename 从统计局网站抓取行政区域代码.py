@@ -2,8 +2,7 @@
 """从国家统计局网站抓取统计行政区域代码信息"""
 
 from selenium import webdriver
-import os,threading,queue
-
+import threading
 
 def get_classes(driver,class_name):
     """查找所需的类元素标签"""
@@ -72,7 +71,6 @@ def read_citycodes(contents):
     with data_lock:
         areacodes.append(contents)
 
-
 if __name__ == '__main__':
     #网页驱动
     driver=webdriver.Firefox()
@@ -120,7 +118,7 @@ if __name__ == '__main__':
                 save_to_text(content['next'],text_file)
             texts.pop()
 
-    sc_areacode[0]['next']= []
+    sc_areacode[0]['next']=[]
     for areacode in areacodes:
         sc_areacode[0]['next'].append(areacode[0])
     text_file = open('area_file.txt', 'w')
