@@ -3,7 +3,14 @@
 # to do:建立调试信息系统
 
 from selenium import webdriver
-import threading
+import threading,logging,time,random
+
+read_to_next_logger = logging.getLogger('read_to_next')
+format = logging.Formatter('%(asctime)s %(filename)s[line:%(lineno)d] %(levelname)s %(message)s')
+log_hand = logging.StreamHandler()
+log_hand.setFormatter(format)
+read_to_next_logger.setLevel(logging.DEBUG)
+read_to_next_logger.addHandler(log_hand)
 
 def get_classes(driver,class_name):
     """查找所需的类元素标签"""
@@ -52,7 +59,7 @@ def read_citycodes(contents):
     本代码没有用到OPP，因此需要嵌套函数来保存函数状态
     """
     if not isinstance(contents,list):contents=[contents]
-    i_f = 1  #全局变量class_tag的索引，用于标示不同层级的标签
+    i_f = 0  #全局变量class_tag的索引，用于标示不同层级的标签
     def read_contents(driver, contents):
         """
         指定一个行政区域的链接地址后，利用该迭代函数抓取内容，直到村级。
@@ -62,8 +69,10 @@ def read_citycodes(contents):
         global class_tag
         for county in contents:
             i_f = i_f + 1
+            if i_f in (2,3): read_to_next_logger.debug('现在正在读取%s' %(county['text']) )
             county = read_to_next(driver, county, class_tag[i_f - 1])
             read_contents(driver, county['next'])
+            #time.sleep(random.random())
             i_f = i_f - 1
         return contents
     driver = webdriver.Firefox()
@@ -74,7 +83,7 @@ def read_citycodes(contents):
 
 if __name__ == '__main__':
     #网页驱动
-    driver=webdriver.Firefox()
+    # driver=webdriver.Firefox()
     #driver=webdriver.Ie()
     #初始化四川省的数据
     sc_areacode = [{'text':['510000000000','四川省'],
@@ -82,46 +91,49 @@ if __name__ == '__main__':
                    'next':[]
                   }]
     #获取四川21个市州信息
-    sc_areacode[0] = read_to_next(driver,sc_areacode[0],'citytr')
-    driver.close()
+    #sc_areacode[0] = read_to_next(driver,sc_areacode[0],'citytr')
+    sc_areacode = read_citycodes(sc_areacode)
+    # driver.close()
     #运行多线程抓取四川各个市州信息，每个市州一个线程，最多同时运行3个线程。
-    threads = []
-    for city in sc_areacode[0]['next']:
-        threads.append(threading.Thread(target = read_citycodes,args=(city,)))
-    for i in range(len(threads)):
-        threads[i].start()
-        #每3个市州一组进行读取
-        if (i+1) % 3 == 0:
-            for m in range(i-2,i+1):
-                threads[m].join()
-        #四川刚好是21个市州，如果不是3的倍数，还要处理最后几个线程的退出问题。
+    # threads = []
+    # for city in sc_areacode[0]['next']:
+    #     threads.append(threading.Thread(target = read_citycodes,args=(city,)))
+    # for i in range(len(threads)):
+    #     threads[i].start()
+    #     #每3个市州一组进行读取
+    #     if (i+1) % 3 == 0:
+    #         for m in range(i-2,i+1):
+    #             threads[m].join()
+    #     #四川刚好是21个市州，如果不是3的倍数，还要处理最后几个线程的退出问题。
 
     def write(sssss,text_file):
         if isinstance(sssss, (list)):
             ssssss = ','.join(sssss)
         else:
             ssssss = sssss
-        print(ssssss)
         text_file.write(ssssss)
         text_file.write('\n')
     #保存数据到文本文件
 
     #模拟数据堆栈，保存上级文本信息
     texts = [[]]
+    i_f = 0
     def save_to_text(contents,text_file):
-        global texts
+        global texts,i_f
         for content in contents:
             ss = texts[-1] + content['text']
             texts.append(ss)
+            i_f += 1
             if content['next'] == []:
                 write(ss,text_file)
             else:
                 save_to_text(content['next'],text_file)
+            if i_f == 3:read_to_next_logger.debug('现在正在读取%s' %(ss) )
             texts.pop()
 
-    sc_areacode[0]['next']=[]
-    for areacode in areacodes:
-        sc_areacode[0]['next'].append(areacode[0])
+    # sc_areacode[0]['next']=[]
+    # for areacode in areacodes:
+    #     sc_areacode[0]['next'].append(areacode[0])
     text_file = open('area_file.txt', 'w')
     save_to_text(sc_areacode, text_file)
     print("恭喜，抓取任务已完成！")
