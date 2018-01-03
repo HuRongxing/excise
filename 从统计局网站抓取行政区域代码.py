@@ -5,12 +5,13 @@
 from selenium import webdriver
 import threading,logging,time,random
 
-read_to_next_logger = logging.getLogger('read_to_next')
+read_to_next_logger = logging.getLogger('debug')
 format = logging.Formatter('%(asctime)s %(filename)s[line:%(lineno)d] %(levelname)s %(message)s')
 log_hand = logging.StreamHandler()
 log_hand.setFormatter(format)
 read_to_next_logger.setLevel(logging.DEBUG)
 read_to_next_logger.addHandler(log_hand)
+
 
 def get_classes(driver,class_name):
     """查找所需的类元素标签"""
@@ -82,6 +83,7 @@ def read_citycodes(contents):
         areacodes.append(contents)
 
 if __name__ == '__main__':
+
     #网页驱动
     # driver=webdriver.Firefox()
     #driver=webdriver.Ie()
@@ -106,6 +108,8 @@ if __name__ == '__main__':
     #             threads[m].join()
     #     #四川刚好是21个市州，如果不是3的倍数，还要处理最后几个线程的退出问题。
 
+    read_to_next_logger.debug('完成读取：%s' %sc_areacode)
+
     def write(sssss,text_file):
         if isinstance(sssss, (list)):
             ssssss = ','.join(sssss)
@@ -128,7 +132,7 @@ if __name__ == '__main__':
                 write(ss,text_file)
             else:
                 save_to_text(content['next'],text_file)
-            if i_f == 3:read_to_next_logger.debug('现在正在读取%s' %(ss) )
+            if i_f == 3:read_to_next_logger.debug('现在正在写入%s' %(ss) )
             texts.pop()
 
     # sc_areacode[0]['next']=[]
