@@ -53,13 +53,13 @@ class_tag = ['citytr','countytr','towntr','villagetr','a']
 #多线程数据锁
 data_lock = threading.Lock()
 #保存结果
-areacodes = []
+areacodes = [0,0,0,0,0,0]
 
 def read_citycodes(contents):
     """
     本代码没有用到OPP，因此需要嵌套函数来保存函数状态
     """
-    if not isinstance(contents,list):contents=[contents]
+    #if not isinstance(contents,list):contents=[contents]
     i_f = 0  #全局变量class_tag的索引，用于标示不同层级的标签
     def read_contents(driver, contents):
         """
@@ -72,6 +72,8 @@ def read_citycodes(contents):
             i_f = i_f + 1
             if i_f in (2,3): read_to_next_logger.debug('现在正在读取%s' %(county['text']) )
             county = read_to_next(driver, county, class_tag[i_f - 1])
+            areacodes[i_f] +=1
+            read_to_next_logger.debug(areacodes)
             read_contents(driver, county['next'])
             #time.sleep(random.random())
             i_f = i_f - 1
@@ -79,8 +81,7 @@ def read_citycodes(contents):
     driver = webdriver.Firefox()
     read_contents(driver, contents)
     driver.close()
-    with data_lock:
-        areacodes.append(contents)
+    return contents
 
 if __name__ == '__main__':
 
